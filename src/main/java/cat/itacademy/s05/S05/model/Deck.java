@@ -1,4 +1,4 @@
 package cat.itacademy.s05.S05.model;
 
-public class Player {
+public class Deck {
 }
