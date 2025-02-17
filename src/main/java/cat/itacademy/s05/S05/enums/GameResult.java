@@ -1,5 +1,17 @@
 package cat.itacademy.s05.S05.enums;
 
 public enum GameResult {
-    PLAYER_WINS, DEALER_WINS, TIE;
+    WIN("Win"),
+    LOSS("Loss"),
+    TIE("Tie");
+
+    private final String result;
+
+    GameResult(String result) {
+        this.result = result;
+    }
+
+    public String getResult() {
+        return result;
+    }
 }

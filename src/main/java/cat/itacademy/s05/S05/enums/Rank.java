@@ -15,24 +15,26 @@ public enum Rank {
     KING("K", 10),
     ACE("A", 11);
 
-    private final String symbol;
+    private final String rank;
     private final int value;
 
-    Rank(String symbol, int value) {
-        this.symbol = symbol;
+    Rank(String rank, int value) {
+        this.rank = rank;
         this.value = value;
     }
 
-    public String getSymbol() {
-        return symbol;
+    public String getRank() {
+        return rank;
     }
 
     public int getValue() {
         return value;
     }
 
-    @Override
-    public String toString() {
-        return symbol;
+    public int getAdjustedValue(int currentTotal) {
+        if (this == ACE && currentTotal + value > 21) {
+            return 1;
+        }
+        return value;
     }
 }
