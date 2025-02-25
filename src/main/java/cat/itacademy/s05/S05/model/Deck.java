@@ -2,6 +2,7 @@ package cat.itacademy.s05.S05.model;
 
 import cat.itacademy.s05.S05.enums.Rank;
 import cat.itacademy.s05.S05.enums.Suit;
+import cat.itacademy.s05.S05.exception.custom.DeckIsEmptyException;
 
 import java.util.ArrayList;
 import java.util.Collections;
@@ -11,13 +12,18 @@ public class Deck {
     private final List<Card> cards;
 
     public Deck() {
-        cards = new ArrayList<>();
+        this.cards = initializeDeck();
+        shuffle();
+    }
+
+    private List<Card> initializeDeck() {
+        List<Card> deck = new ArrayList<>();
         for (Suit suit : Suit.values()) {
-            for (Rank rank : Rank.values()) {
-                cards.add(new Card(rank, suit));
+            for (Rank value : Rank.values()) {
+                deck.add(new Card(value, suit));
             }
         }
-        shuffle();
+        return deck;
     }
 
     public void shuffle() {
@@ -25,10 +31,13 @@ public class Deck {
     }
 
     public Card drawCard() {
+        if (cards.isEmpty()) {
+            throw new DeckIsEmptyException("Deck is empty, cannot draw a card.");
+        }
         return cards.remove(0);
     }
 
-    public int size() {
-        return cards.size();
+    public List<Card> getCards() {
+        return new ArrayList<>(cards);
     }
 }

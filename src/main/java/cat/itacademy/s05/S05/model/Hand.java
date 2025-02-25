@@ -1,39 +1,50 @@
 package cat.itacademy.s05.S05.model;
 
+import cat.itacademy.s05.S05.enums.Rank;
+import com.fasterxml.jackson.annotation.JsonProperty;
+import lombok.Data;
+
 import java.util.ArrayList;
 import java.util.List;
+import java.util.stream.Collectors;
 
+@Data
 public class Hand {
-    private final List<Card> cards;
-
-    public Hand() {
-        this.cards = new ArrayList<>();
-    }
+    private List<Card> cards = new ArrayList<>();
 
     public void addCard(Card card) {
         cards.add(card);
     }
 
-    public int calculateValue() {
-        int value = 0;
-        int aces = 0;
-
+    public int calculateTotal() {
+        int total = 0;
+        int aceCount = 0;
         for (Card card : cards) {
-            value += card.getValue();
-            if (card.getRank().toString().equals("A")) {
-                aces++;
+            total += card.getRank().getValue();
+            if (card.getRank() == Rank.ACE) {
+                aceCount++;
             }
         }
 
-        while (value > 21 && aces > 0) {
-            value -= 10;
-            aces--;
+        while (total > 21 && aceCount > 0) {
+            total -= 10;
+            aceCount--;
         }
-
-        return value;
+        return total;
     }
 
-    public List<Card> getCards() {
-        return cards;
+    public boolean isBust() {
+        return calculateTotal() > 21;
+    }
+
+    @JsonProperty("score")
+    public int getScore() {
+        return calculateTotal();
+    }
+
+    public List<String> getCardNames() {
+        return cards.stream()
+                .map(Card::toString)
+                .collect(Collectors.toList());
     }
 }
