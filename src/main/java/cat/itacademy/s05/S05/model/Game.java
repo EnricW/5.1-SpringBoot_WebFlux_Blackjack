@@ -97,10 +97,14 @@ public class Game {
         int playerScore = playerHandCards.calculateTotal();
         int dealerScore = dealerHandCards.calculateTotal();
 
-        if (playerHandCards.isBust() || dealerScore > playerScore) {
+        if (playerHandCards.isBust()) {
             winner = "dealer";
-        } else if (dealerHandCards.isBust() || playerScore > dealerScore) {
+        } else if (dealerHandCards.isBust()) {
             winner = "player";
+        } else if (playerScore > dealerScore) {
+            winner = "player";
+        } else if (dealerScore > playerScore) {
+            winner = "dealer";
         } else {
             winner = "tie";
         }
