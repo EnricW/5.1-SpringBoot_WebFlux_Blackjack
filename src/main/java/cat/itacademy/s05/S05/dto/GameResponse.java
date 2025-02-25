@@ -1,7 +1,7 @@
 package cat.itacademy.s05.S05.dto;
 
-import cat.itacademy.s05.S05.enums.GameState;
 import cat.itacademy.s05.S05.model.Game;
+import cat.itacademy.s05.S05.enums.GameState;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;

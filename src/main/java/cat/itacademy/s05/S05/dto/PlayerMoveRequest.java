@@ -2,8 +2,8 @@ package cat.itacademy.s05.S05.dto;
 
 import cat.itacademy.s05.S05.enums.PlayerMove;
 import jakarta.validation.constraints.NotNull;
-import lombok.AllArgsConstructor;
 import lombok.Data;
+import lombok.AllArgsConstructor;
 import lombok.NoArgsConstructor;
 
 @Data
