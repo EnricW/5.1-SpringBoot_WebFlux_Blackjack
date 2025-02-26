@@ -9,6 +9,6 @@ public interface GameService {
     Mono<Game> createGame(String playerName);
     Flux<Game> getAllGames();
     Mono<Game> getGame(String gameId);
-    Mono<Game> playMove(String gameId, PlayerMove move);
+    Mono<Game> playMove(String gameId, String move);
     Mono<Void> deleteGame(String gameId);
 }

@@ -1,8 +1,10 @@
 package cat.itacademy.s05.S05.enums;
 
-import cat.itacademy.s05.S05.exception.custom.InvalidMoveException;
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonValue;
+
+import java.util.Arrays;
+import java.util.Optional;
 
 public enum PlayerMove {
     HIT("Hit"),
@@ -20,16 +22,9 @@ public enum PlayerMove {
         return displayName;
     }
 
-    @JsonCreator
-    public static PlayerMove fromString(String value) {
-        if (value == null || value.trim().isEmpty()) {
-            throw new InvalidMoveException("Move cannot be empty.");
-        }
-        for (PlayerMove move : PlayerMove.values()) {
-            if (move.displayName.equalsIgnoreCase(value) || move.name().equalsIgnoreCase(value)) {
-                return move;
-            }
-        }
-        throw new InvalidMoveException("Invalid move provided: " + value);
+    public static Optional<PlayerMove> fromString(String value) {
+        return Arrays.stream(PlayerMove.values())
+                .filter(move -> move.displayName.equalsIgnoreCase(value) || move.name().equalsIgnoreCase(value))
+                .findFirst();
     }
 }

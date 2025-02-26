@@ -5,6 +5,7 @@ import cat.itacademy.s05.S05.enums.PlayerMove;
 import cat.itacademy.s05.S05.exception.custom.GameAlreadyEndedException;
 import cat.itacademy.s05.S05.exception.custom.GameNotFoundException;
 import cat.itacademy.s05.S05.exception.custom.GameNotInProgressException;
+import cat.itacademy.s05.S05.exception.custom.InvalidMoveException;
 import cat.itacademy.s05.S05.model.Game;
 import cat.itacademy.s05.S05.repository.GameRepository;
 import cat.itacademy.s05.S05.service.GameService;
@@ -51,25 +52,40 @@ public class GameServiceImpl implements GameService {
     }
 
     @Override
-    public Mono<Game> playMove(String gameId, PlayerMove move) {
-        return gameRepository.findById(gameId)
-                .switchIfEmpty(Mono.error(new GameNotFoundException("Game not found with id: " + gameId)))
-                .flatMap(game -> {
-                    if (game.getState() == GameState.ENDED) {
-                        return Mono.error(new GameAlreadyEndedException("Game already ended."));
-                    }
-                    if (game.getState() != GameState.IN_PROGRESS) {
-                        return Mono.error(new GameNotInProgressException("Cannot play move, game is not in progress."));
-                    }
-                    game.executeMove(move);
-                    return endGame(game);
-                })
-                .doOnSuccess(updatedGame -> logger.info("Move executed successfully for game ID: {}", updatedGame.getId()));
+    public Mono<Game> playMove(String gameId, String move) {
+        return PlayerMove.fromString(move)
+                .map(Mono::just)
+                .orElseGet(() -> Mono.error(new InvalidMoveException("Invalid move: " + move)))
+                .flatMap(playerMove -> gameRepository.findById(gameId)
+                        .switchIfEmpty(Mono.error(new GameNotFoundException("Game not found with id: " + gameId)))
+                        .flatMap(game -> {
+                            if (game.getState() == GameState.ENDED) {
+                                return Mono.error(new GameAlreadyEndedException("Game already ended."));
+                            }
+                            if (game.getState() != GameState.IN_PROGRESS) {
+                                return Mono.error(new GameNotInProgressException("Cannot play move, game is not in progress."));
+                            }
+
+                            game.executeMove(playerMove);
+
+                            if (game.getState() == GameState.IN_PROGRESS) {
+                                return gameRepository.save(game);
+                            }
+
+                            return endGame(game);
+                        }));
     }
 
     private Mono<Game> endGame(Game game) {
-        game.determineWinner();
-        logger.info("Game ended. Winner determined for game ID: {}", game.getId());
+        if (game.getState() != GameState.ENDED) {
+            logger.info("Ending game ID: {}", game.getId());
+            game.dealerTurn();
+            game.determineWinner();
+            game.setState(GameState.ENDED);
+
+            logger.info("Game ended. Winner determined: {}", game.getWinner());
+        }
+
         return playerService.updatePlayerStats(game)
                 .then(gameRepository.save(game));
     }

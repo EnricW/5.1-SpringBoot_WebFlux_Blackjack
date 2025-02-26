@@ -76,21 +76,27 @@ public class Game {
 
         if (playerHandCards.calculateTotal() >= 21) {
             state = GameState.ENDED;
-            logger.info("Game ended after hit move. Player total: {}", playerHandCards.calculateTotal());
+            determineWinner();
+            logger.info("Game ended after hit move. Player total: {}. Winner: {}", playerHandCards.calculateTotal(), winner);
         }
     }
 
     private void handleStandMove() {
         dealerTurn();
         state = GameState.ENDED;
-        logger.info("Game ended after stand move.");
+        determineWinner();
+        logger.info("Game ended after stand move. Winner: {}", winner);
     }
 
-    private void dealerTurn() {
-        while (this.dealerHandCards.calculateTotal() < 17 && !deckRemainingCards.isEmpty()) {
-            this.dealerHandCards.addCard(deckRemainingCards.remove(0));
+    public void dealerTurn() {
+        logger.info("Dealer's turn started. Initial total: {}", dealerHandCards.calculateTotal());
+
+        while (dealerHandCards.calculateTotal() < 17 && !deckRemainingCards.isEmpty()) {
+            dealerHandCards.addCard(deckRemainingCards.remove(0));
+            logger.info("Dealer drew a card. New total: {}", dealerHandCards.calculateTotal());
         }
-        logger.info("Dealer's turn ended with total: {}", dealerHandCards.calculateTotal());
+
+        logger.info("Dealer's turn ended. Final total: {}", dealerHandCards.calculateTotal());
     }
 
     public void determineWinner() {
