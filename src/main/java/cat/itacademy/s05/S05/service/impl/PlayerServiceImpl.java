@@ -37,8 +37,8 @@ public class PlayerServiceImpl implements PlayerService {
 
     @Override
     public Flux<Player> getRanking() {
-        logger.info("Fetching player rankings.");
-        return playerRepository.findAll()
+        logger.info("Fetching top 10 players sorted by wins.");
+        return playerRepository.findTop10ByOrderByWinsDesc()
                 .switchIfEmpty(Flux.error(new RankingIsEmptyException("Ranking is empty")));
     }
 

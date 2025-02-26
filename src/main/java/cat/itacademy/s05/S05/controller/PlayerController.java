@@ -31,9 +31,6 @@ public class PlayerController {
     @GetMapping("/ranking")
     public Flux<PlayerResponse> getRanking() {
         return playerService.getRanking()
-                .sort((p1, p2) -> Integer.compare(p2.getWins(), p1.getWins()))
-                .take(10)
-                .map(PlayerResponse::new)
-                .switchIfEmpty(Flux.error(new RankingIsEmptyException("No players found in ranking.")));
+                .map(PlayerResponse::new);
     }
 }
