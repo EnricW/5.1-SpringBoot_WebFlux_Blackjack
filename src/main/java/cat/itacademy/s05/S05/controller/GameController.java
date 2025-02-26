@@ -7,6 +7,7 @@ import cat.itacademy.s05.S05.service.GameService;
 import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
@@ -23,33 +24,39 @@ public class GameController {
     }
 
     @PostMapping
-    @ResponseStatus(HttpStatus.CREATED)
-    public Mono<GameResponse> createGame(@Valid @RequestBody CreateGameRequest request) {
+    public Mono<ResponseEntity<GameResponse>> createGame(@Valid @RequestBody CreateGameRequest request) {
         return gameService.createGame(request.getPlayerName())
-                .map(GameResponse::new);
+                .map(game -> ResponseEntity.status(HttpStatus.CREATED).body(new GameResponse(game)));
     }
 
     @GetMapping
-    public Flux<GameResponse> getAllGames() {
+    public Mono<ResponseEntity<Flux<GameResponse>>> getAllGames() {
         return gameService.getAllGames()
-                .map(GameResponse::new);
+                .map(GameResponse::new)
+                .collectList()
+                .map(games -> games.isEmpty()
+                        ? ResponseEntity.noContent().build()
+                        : ResponseEntity.ok().body(Flux.fromIterable(games))
+                );
     }
 
     @GetMapping("/{id}")
-    public Mono<GameResponse> getGame(@PathVariable String id) {
+    public Mono<ResponseEntity<GameResponse>> getGame(@PathVariable String id) {
         return gameService.getGame(id)
-                .map(GameResponse::new);
+                .map(game -> ResponseEntity.ok().body(new GameResponse(game)))
+                .defaultIfEmpty(ResponseEntity.notFound().build());
     }
 
     @PostMapping("/{id}/moves")
-    public Mono<GameResponse> playMove(@PathVariable String id, @Valid @RequestBody PlayerMoveRequest request) {
+    public Mono<ResponseEntity<GameResponse>> playMove(@PathVariable String id, @Valid @RequestBody PlayerMoveRequest request) {
         return gameService.playMove(id, request.getMove())
-                .map(GameResponse::new);
+                .map(game -> ResponseEntity.ok().body(new GameResponse(game)))
+                .defaultIfEmpty(ResponseEntity.notFound().build());
     }
 
     @DeleteMapping("/{id}")
-    @ResponseStatus(HttpStatus.NO_CONTENT)
-    public Mono<Void> deleteGame(@PathVariable String id) {
-        return gameService.deleteGame(id);
+    public Mono<ResponseEntity<Void>> deleteGame(@PathVariable String id) {
+        return gameService.deleteGame(id)
+                .thenReturn(ResponseEntity.noContent().build());
     }
 }
