@@ -7,5 +7,4 @@ import reactor.core.publisher.Mono;
 
 @Repository
 public interface GameRepository extends ReactiveMongoRepository<Game, String> {
-    Mono<Game> findById(String Id);
 }
