@@ -2,12 +2,16 @@ package cat.itacademy.s05.S05.service.impl;
 
 import cat.itacademy.s05.S05.enums.GameState;
 import cat.itacademy.s05.S05.enums.PlayerMove;
+import cat.itacademy.s05.S05.enums.Rank;
 import cat.itacademy.s05.S05.exception.custom.GameAlreadyEndedException;
 import cat.itacademy.s05.S05.exception.custom.GameNotFoundException;
 import cat.itacademy.s05.S05.exception.custom.GameNotInProgressException;
 import cat.itacademy.s05.S05.exception.custom.InvalidMoveException;
+import cat.itacademy.s05.S05.model.Card;
 import cat.itacademy.s05.S05.model.Game;
+import cat.itacademy.s05.S05.model.Hand;
 import cat.itacademy.s05.S05.repository.GameRepository;
+import cat.itacademy.s05.S05.service.DeckService;
 import cat.itacademy.s05.S05.service.GameService;
 import cat.itacademy.s05.S05.service.PlayerService;
 import org.slf4j.Logger;
@@ -17,25 +21,45 @@ import org.springframework.stereotype.Service;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 
+import java.util.List;
+
 @Service
 public class GameServiceImpl implements GameService {
     private static final Logger logger = LoggerFactory.getLogger(GameServiceImpl.class);
 
     private final GameRepository gameRepository;
     private final PlayerService playerService;
+    private final DeckService deckService;
 
     @Autowired
-    public GameServiceImpl(GameRepository gameRepository, PlayerService playerService) {
+    public GameServiceImpl(GameRepository gameRepository, PlayerService playerService, DeckService deckService) {
         this.gameRepository = gameRepository;
         this.playerService = playerService;
+        this.deckService = deckService;
     }
 
     @Override
     public Mono<Game> createGame(String playerName) {
         Game game = new Game();
-        game.initializeGame(playerName);
+        game.setPlayerName(playerName);
+        game.setState(GameState.IN_PROGRESS);
+
+        List<Card> deck = deckService.createShuffledDeck();
+        game.setDeckRemainingCards(deck);
+        game.setPlayerHandCards(new Hand());
+        game.setDealerHandCards(new Hand());
+        dealInitialCards(game);
+
         return gameRepository.save(game)
-                .doOnSuccess(savedGame -> logger.info("Game created successfully with ID: {}", savedGame.getId()));
+                .doOnSuccess(savedGame -> logger.info("Game created successfully for player: {}", savedGame.getPlayerName()));
+    }
+
+    private void dealInitialCards(Game game) {
+        game.getPlayerHandCards().getCards().add(deckService.drawCard(game.getDeckRemainingCards()));
+        game.getPlayerHandCards().getCards().add(deckService.drawCard(game.getDeckRemainingCards()));
+        game.getDealerHandCards().getCards().add(deckService.drawCard(game.getDeckRemainingCards()));
+        game.getDealerHandCards().getCards().add(deckService.drawCard(game.getDeckRemainingCards()));
+        logger.info("Initial cards dealt to player and dealer.");
     }
 
     @Override
@@ -48,14 +72,14 @@ public class GameServiceImpl implements GameService {
     public Mono<Game> getGame(String gameId) {
         logger.info("Fetching game with ID: {}", gameId);
         return gameRepository.findById(gameId)
-                .switchIfEmpty(Mono.error(new GameNotFoundException("Game not found with id: " + gameId)));
+                .switchIfEmpty(Mono.error(new GameNotFoundException("Game not found with ID: " + gameId)));
     }
 
     @Override
     public Mono<Game> playMove(String gameId, String move) {
         return validateMove(move)
                 .flatMap(playerMove -> gameRepository.findById(gameId)
-                        .switchIfEmpty(Mono.error(new GameNotFoundException("Game not found with id: " + gameId)))
+                        .switchIfEmpty(Mono.error(new GameNotFoundException("Game not found with ID: " + gameId)))
                         .flatMap(game -> validateGameState(game)
                                 .flatMap(validatedGame -> processMove(validatedGame, playerMove))));
     }
@@ -77,7 +101,12 @@ public class GameServiceImpl implements GameService {
     }
 
     private Mono<Game> processMove(Game game, PlayerMove move) {
-        game.executeMove(move);
+        switch (move) {
+            case HIT -> handleHitMove(game);
+            case STAND -> handleStandMove(game);
+            default -> throw new InvalidMoveException("Invalid move: " + move);
+        }
+
         if (game.getState() == GameState.IN_PROGRESS) {
             return gameRepository.save(game);
         }
@@ -85,10 +114,69 @@ public class GameServiceImpl implements GameService {
         return endGame(game);
     }
 
+    private void handleHitMove(Game game) {
+        game.getPlayerHandCards().getCards().add(deckService.drawCard(game.getDeckRemainingCards()));
+        logger.info("Player {} hits. New hand total: {}", game.getPlayerName(), calculateHandTotal(game.getPlayerHandCards()));
+
+        if (calculateHandTotal(game.getPlayerHandCards()) >= 21) {
+            game.setState(GameState.ENDED);
+            determineWinner(game);
+            logger.info("Game ended after hit move. Player total: {}. Winner: {}", calculateHandTotal(game.getPlayerHandCards()), game.getWinner());
+        }
+    }
+
+    private void handleStandMove(Game game) {
+        dealerTurn(game);
+        game.setState(GameState.ENDED);
+        determineWinner(game);
+        logger.info("Game ended after stand move. Winner: {}", game.getWinner());
+    }
+
+    private void dealerTurn(Game game) {
+        logger.info("Dealer's turn started. Initial total: {}", calculateHandTotal(game.getDealerHandCards()));
+
+        while (calculateHandTotal(game.getDealerHandCards()) < 17 && !game.getDeckRemainingCards().isEmpty()) {
+            game.getDealerHandCards().getCards().add(deckService.drawCard(game.getDeckRemainingCards()));
+            logger.info("Dealer drew a card. New total: {}", calculateHandTotal(game.getDealerHandCards()));
+        }
+
+        logger.info("Dealer's turn ended. Final total: {}", calculateHandTotal(game.getDealerHandCards()));
+    }
+
+    private int calculateHandTotal(Hand hand) {
+        int total = 0;
+        int aceCount = 0;
+        for (Card card : hand.getCards()) {
+            total += card.getRank().getValue();
+            if (card.getRank() == Rank.ACE) aceCount++;
+        }
+        while (total > 21 && aceCount > 0) {
+            total -= 10;
+            aceCount--;
+        }
+        return total;
+    }
+
+    private void determineWinner(Game game) {
+        int playerScore = calculateHandTotal(game.getPlayerHandCards());
+        int dealerScore = calculateHandTotal(game.getDealerHandCards());
+
+        if (playerScore > 21) {
+            game.setWinner("dealer");
+        } else if (dealerScore > 21 || playerScore > dealerScore) {
+            game.setWinner("player");
+        } else if (dealerScore > playerScore) {
+            game.setWinner("dealer");
+        } else {
+            game.setWinner("tie");
+        }
+        logger.info("Game result determined. Winner: {}", game.getWinner());
+    }
+
     private Mono<Game> endGame(Game game) {
         if (game.getState() != GameState.ENDED) {
-            game.dealerTurn();
-            game.determineWinner();
+            dealerTurn(game);
+            determineWinner(game);
             game.setState(GameState.ENDED);
             logger.info("Game ended. Winner determined: {}", game.getWinner());
         }

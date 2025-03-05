@@ -26,10 +26,10 @@ public class GameResponse {
         this.id = game.getId();
         this.playerName = game.getPlayerName();
         this.state = game.getState();
-        this.playerCards = game.getPlayerHandCards() != null ? game.getPlayerHandCards().getCardNames() : null;
-        this.playerScore = game.getPlayerHandCards() != null ? game.getPlayerHandCards().getScore() : 0;
-        this.dealerCards = game.getDealerHandCards() != null ? game.getDealerHandCards().getCardNames() : null;
-        this.dealerScore = game.getDealerHandCards() != null ? game.getDealerHandCards().getScore() : 0;
+        this.playerCards = game.getPlayerHandCards().getCardNames();
+        this.playerScore = game.getPlayerHandCards().getScore();
+        this.dealerCards = game.getDealerHandCards().getCardNames();
+        this.dealerScore = game.getDealerHandCards().getScore();
         this.winner = game.getWinner();
         this.remainingCards = game.getDeckRemainingCards() != null ? game.getDeckRemainingCards().size() : 0;
     }

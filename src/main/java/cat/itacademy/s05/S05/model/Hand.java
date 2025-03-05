@@ -16,6 +16,11 @@ public class Hand {
         cards.add(card);
     }
 
+    @JsonProperty("score")
+    public int getScore() {
+        return calculateTotal();
+    }
+
     public int calculateTotal() {
         int total = 0;
         int aceCount = 0;
@@ -35,11 +40,6 @@ public class Hand {
 
     public boolean isBust() {
         return calculateTotal() > 21;
-    }
-
-    @JsonProperty("score")
-    public int getScore() {
-        return calculateTotal();
     }
 
     public List<String> getCardNames() {
