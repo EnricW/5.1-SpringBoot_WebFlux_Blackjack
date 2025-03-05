@@ -62,12 +62,14 @@ public class PlayerServiceImpl implements PlayerService {
     @Override
     public Mono<Void> updatePlayerStats(Game game) {
         return findByName(game.getPlayerName())
+                .switchIfEmpty(Mono.error(new PlayerNotFoundException("Player not found: " + game.getPlayerName())))
                 .flatMap(player -> {
-                    if ("player".equals(game.getWinner())) {
+                    if ("player".equalsIgnoreCase(game.getWinner())) {
                         player.addWin();
                         logger.info("Player {} won the game. Updating stats.", player.getName());
+                        return save(player);
                     }
-                    return save(player);
+                    return Mono.empty();
                 })
                 .then();
     }
