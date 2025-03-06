@@ -1,0 +1,10 @@
+# Ignorar fitxers innecessaris per a la imatge Docker
+target/
+*.iml
+.idea/
+*.class
+*.log
+node_modules/
+docker-compose.yml
+.git
+.gitignore
