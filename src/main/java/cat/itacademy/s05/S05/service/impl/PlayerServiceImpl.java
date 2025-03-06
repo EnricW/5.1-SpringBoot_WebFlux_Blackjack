@@ -66,7 +66,7 @@ public class PlayerServiceImpl implements PlayerService {
                 .flatMap(player -> {
                     if ("player".equalsIgnoreCase(game.getWinner())) {
                         player.addWin();
-                        logger.info("Player {} won the game. Updating stats.", player.getName());
+                        logger.info("Player {} won the game, updating wins count.", player.getName());
                         return save(player);
                     }
                     return Mono.empty();
