@@ -1,14 +1,17 @@
-# 1. Usa una imatge oficial de JDK com a base
-FROM eclipse-temurin:17-jdk
-
-# 2. Estableix el directori de treball dins del contenidor
+# Etapa de compilació
+FROM maven:3.9-eclipse-temurin-17 AS build
 WORKDIR /app
 
-# 3. Copia el fitxer JAR generat (Assegura't de tenir aquest nom correcte)
-COPY target/S05-0.0.1-SNAPSHOT.jar app.jar
+# Copia els fitxers del projecte
+COPY pom.xml .
+COPY src ./src
 
-# 4. Defineix el port d'exposició de l'aplicació
+# Compila l'aplicació
+RUN mvn clean package -DskipTests
+
+# Etapa d'execució
+FROM eclipse-temurin:17-jre-alpine
+WORKDIR /app
+COPY --from=build /app/target/*.jar app.jar
 EXPOSE 8080
-
-# 5. Comanda per executar l'aplicació
-CMD ["java", "-jar", "app.jar"]
+ENTRYPOINT ["java", "-jar", "app.jar"]
