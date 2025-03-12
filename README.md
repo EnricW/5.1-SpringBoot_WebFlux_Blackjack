@@ -79,7 +79,17 @@ GET /games/{id}
 
 ---
 
-### 3. Make a Move
+### 3. Get all Games
+
+```http
+GET /games
+```
+
+**Returns:** Detailed information about the games.
+
+---
+
+### 4. Make a Move
 
 ```http
 POST /games/{id}/moves
@@ -97,17 +107,17 @@ POST /games/{id}/moves
 
 ---
 
-### 4. Delete Game
+### 5. Delete Game
 
 ```http
-DELETE /game/{id}
+DELETE /games/{id}
 ```
 
 **Parameter:** `id` of the game**Returns:** Status code **204 No Content** if the game is successfully deleted.
 
 ---
 
-### 5. Get Player Rankings
+### 6. Get Player Rankings
 
 ```http
 GET /ranking
@@ -117,7 +127,7 @@ GET /ranking
 
 ---
 
-### 6. Change Player Name
+### 7. Change Player Name
 
 ```http
 PUT /player/{playerId}
