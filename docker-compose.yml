@@ -18,14 +18,17 @@ services:
       MYSQL_DATABASE: blackjack
       MYSQL_USER: user
       MYSQL_PASSWORD: password
+      MYSQL_INITDB_SKIP_TZINFO: "1"
     ports:
-      - "3307:3306"
+      - "3306:3306"
     networks:
       - app_network
+    volumes:
+      - mysql_data:/var/lib/mysql  # Persist MySQL data
     healthcheck:
       test: ["CMD", "mysqladmin", "ping", "-h", "localhost"]
       interval: 15s
-      retries: 8
+      retries: 10
       timeout: 5s
 
   app:
@@ -48,3 +51,6 @@ services:
 
 networks:
   app_network:
+
+volumes:
+  mysql_data:
