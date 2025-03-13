@@ -33,13 +33,13 @@ This project implements a reactive Blackjack game API using Spring WebFlux. The 
 The project is structured following a reactive architecture with the following packages:
 
 ```
-cat.itacademy.blackjack.controller    → Contains reactive REST controllers
-cat.itacademy.blackjack.model         → Contains entity classes
-cat.itacademy.blackjack.service       → Contains reactive business logic
-cat.itacademy.blackjack.repository    → Contains reactive repositories
-cat.itacademy.blackjack.exception     → Contains global exception handling
-cat.itacademy.blackjack.config        → Configuration classes
-cat.itacademy.blackjack.dto           → Data Transfer Objects
+cat.itacademy.s05.S05.controller    → Contains reactive REST controllers
+cat.itacademy.s05.S05.model         → Contains entity classes
+cat.itacademy.s05.S05.service       → Contains reactive business logic
+cat.itacademy.s05.S05.repository    → Contains reactive repositories
+cat.itacademy.s05.S05.exception     → Contains global exception handling
+cat.itacademy.s05.S05.config        → Configuration classes
+cat.itacademy.s05.S05.dto           → Data Transfer Objects
 ```
 
 ## Database Configuration
@@ -89,7 +89,7 @@ GET /games
 
 ---
 
-### 4. Make a Move
+### 4. Make a Move (Hit or Stand)
 
 ```http
 POST /games/{id}/moves
@@ -170,92 +170,6 @@ The application includes unit tests for controllers and services using **JUnit a
 The API is documented using **Swagger**. Once the application is running, you can access the Swagger UI at:
 
 [http://localhost:8080/swagger-ui.html](http://localhost:8080/swagger-ui.html)
-
----
-
-## Docker Setup
-
-### Step 1: Create `Dockerfile`
-
-Create a `Dockerfile` in the root directory:
-
-```dockerfile
-FROM openjdk:17-jdk-slim
-
-WORKDIR /app
-
-COPY target/*.jar app.jar
-
-EXPOSE 8080
-
-ENTRYPOINT ["java", "-jar", "app.jar"]
-```
-
----
-
-### Step 2: Create `.dockerignore`
-
-Create a `.dockerignore` file:
-
-```
-target/*
-!target/*.jar
-.git
-.gitignore
-.idea
-*.iml
-```
-
----
-
-### Step 3: Build the Docker Image
-
-```bash
-docker build -t blackjack-api .
-```
-
----
-
-### Step 4: Run the Docker Image
-
-```bash
-docker run -p 8080:8080 blackjack-api
-```
-
----
-
-### Step 5: Tag the Docker Image
-
-```bash
-docker tag blackjack-api username/blackjack-api:latest
-```
-
----
-
-### Step 6: Login to Docker Hub
-
-```bash
-docker login
-```
-
----
-
-### Step 7: Push the Image to Docker Hub
-
-```bash
-docker push username/blackjack-api:latest
-```
-
----
-
-### Step 8: Test the Docker Image
-
-Pull and run the image to verify it works correctly:
-
-```bash
-docker pull username/blackjack-api:latest
-docker run -p 8080:8080 username/blackjack-api:latest
-```
 
 ---
 
