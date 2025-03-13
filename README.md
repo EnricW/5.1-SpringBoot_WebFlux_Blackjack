@@ -75,7 +75,7 @@ POST /games
 GET /games/{id}
 ```
 
-**Parameter:** `id` of the game**Returns:** Detailed information about the game.
+**Parameter:** `id` of the game. **Returns:** Detailed information about the game.
 
 ---
 
@@ -95,7 +95,7 @@ GET /games
 POST /games/{id}/moves
 ```
 
-**Parameter:** `id` of the game**Body (JSON):**
+**Parameter:** `id` of the game. **Body (JSON):**
 
 ```json
 {
@@ -113,7 +113,7 @@ POST /games/{id}/moves
 DELETE /games/{id}
 ```
 
-**Parameter:** `id` of the game**Returns:** Status code **204 No Content** if the game is successfully deleted.
+**Parameter:** `id` of the game. **Returns:** Status code **204 No Content** if the game is successfully deleted.
 
 ---
 
@@ -133,7 +133,7 @@ GET /ranking
 PUT /player/{playerId}
 ```
 
-**Parameter:** `playerId` of the player**Body (JSON):**
+**Parameter:** `playerId` of the player. **Body (JSON):**
 
 ```json
 {
